@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <complex.h>
 #include <conio.h>
-#include <windows.h> // sleep
+#include <crtdbg.h> // memory leaks checking
 
 #include "parser.h"
 #include "cmap.h"
@@ -23,13 +23,11 @@ void print_menu() {
 }
 
 bool show_about() {
-	printf("C Calculator Project\n");
-	printf("Supports:\n");
-	printf("* variables\n* complex numbers\n* popular functions(pow, abs, ...)\n");
+	printf("....... C Calculator .......\n");
+	printf("Calculator that supports variables, complex numbers, arithmetic operators and functions.\n");
 	printf("by Ivan Stasevich\n");
-	printf("02.01.2023\n");
-	printf("Press any key to return to the menu\n");
-	_getch();
+	printf("07.01.2023\n");
+	system("pause");
 	system("cls");
 	return true;
 }
@@ -49,7 +47,7 @@ void output_expr_value(FILE* f, cmap* vars, const char* expr) {
 		fprintf(f, "[Parsing Error] Incorrect bracket placement\n");
 		break;
 	case PARSER_ERR_UNDEFINED_NAME:
-		fprintf(f, "[Parsing Error] Undefined name in expression");
+		fprintf(f, "[Parsing Error] Undefined name in expression\n");
 		break;
 	}
 }
@@ -103,7 +101,7 @@ bool file_input(cmap* vars) {
 bool menu(cmap* vars) {
 	print_menu();
 	char ch = _getch();
-	while (ch != '1' && ch != '2' && ch != '3') {
+	while (ch != '1' && ch != '2' && ch != '3' && ch != '4') {
 		ch = _getch();
 	}
 	system("cls");
@@ -120,11 +118,21 @@ bool menu(cmap* vars) {
 	return false;
 }
 
-int main() {
+void start() {
 	cmap* vars = cmap_init(VAR_COUNT);
 	while (menu(vars)) {
 		menu(vars);
 	}
 	cmap_free(vars);
+}
+
+int main() {
+	start();
+	if (_CrtDumpMemoryLeaks()) {
+		printf("[Warning] Memory leak is detected!");
+	}
+	else {
+		printf("[Success] Finished!");
+	}
 	return 0;
 }

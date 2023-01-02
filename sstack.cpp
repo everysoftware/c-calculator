@@ -23,6 +23,9 @@ sstack* sstack_init(size_t size, size_t string_size) {
 }
 
 void sstack_free(sstack* s) {
+	for (size_t i = 0; i < s->capacity; ++i) {
+		free(s->data[i]);
+	}
 	free(s->data);
 	free(s);
 }
@@ -34,6 +37,9 @@ void sstack_reserve(sstack* s, size_t new_capacity) {
 		for (size_t i = 0; i < new_capacity; ++i) {
 			temp[i] = (i > n) ? s->data[i] : (char*)calloc(s->string_size, sizeof(char));
 		}
+	}
+	for (size_t i = 0; i < s->capacity; ++i) {
+		free(s->data[i]);
 	}
 	free(s->data);
 	s->data = temp;

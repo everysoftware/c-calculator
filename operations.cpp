@@ -74,8 +74,8 @@ _Dcomplex divide(_Dcomplex a, _Dcomplex b)
 	double denominator = x2 * x2 + y2 * y2;
 	if (denominator == 0)
 	{
-		printf("Error: Divison by zero!");
-		exit(1);
+		printf("[Calculation Error] Divison by zero\n");
+		return _DCOMPLEX_(0, 0);
 	}
 	return _DCOMPLEX_((x1 * x2 + y1 * y2) / denominator, (x2 * y1 - x1 * y2) / denominator);
 }
@@ -185,8 +185,8 @@ _Dcomplex process_unary_op(const char* op, _Dcomplex a) {
 			return unary_ops[i].func(a);
 		}
 	}
-	printf("Error: undefined unary op (%s)", op);
-	exit(1);
+	printf("[Parsing Error] Undefined unary op %s\n", op);
+	return _DCOMPLEX_(0, 0);
 }
 _Dcomplex process_binary_op(const char* op, _Dcomplex a, _Dcomplex b) {
 	for (size_t i = 0; i < BINARY_OP_COUNT; ++i) {
@@ -194,8 +194,8 @@ _Dcomplex process_binary_op(const char* op, _Dcomplex a, _Dcomplex b) {
 			return binary_ops[i].func(a, b);
 		}
 	}
-	printf("Error: undefined binary op (%s)", op);
-	exit(1);
+	printf("[Parsing Error] Undefined binary op %s\n", op);
+	return _DCOMPLEX_(0, 0);
 }
 void process_op(cstack* st, const char* op)
 {

@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
-#include <assert.h>
 
 #include "cmap.h"
 #include "cvar.h"
@@ -61,7 +60,6 @@ bool cmap_insert(cmap* map, const char* name, _Dcomplex value) {
 }
 
 cvar cmap_back(cmap* map) {
-	assert(map->size > 0);
 	return map->data[map->size - 1];
 }
 

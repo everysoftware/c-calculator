@@ -97,14 +97,15 @@ sstack* split_into_tokens(const char* expr) {
 
 bool resolve_name(const char* name, cmap const* vars, _Dcomplex* buffer) {
 	// константа? переменная?
-	return !get_const(name, buffer) && !cmap_get(vars, name, buffer);
+	return get_const(name, buffer) || cmap_get(vars, name, buffer);
 }
 
-void solve_RPN(const char* expr, cmap const* vars, _Dcomplex* buffer) {
+int solve_RPN(const char* expr, cmap const* vars, _Dcomplex* buffer) {
 	cstack* st = cstack_init(NUMBER_STACK_SIZE);
 	sstack* op = sstack_init(OP_STACK_SIZE, OP_NAME_SIZE);
 	bool may_unary = true; // для различения унарных плюса и минуса
 	sstack* tokens = split_into_tokens(expr);
+	int status = PARSER_OK;
 	for (size_t i = 0; i < tokens->size; ++i) {
 		const char* t = tokens->data[i];
 		if (strcmp(t, "(") == 0) {
@@ -144,19 +145,25 @@ void solve_RPN(const char* expr, cmap const* vars, _Dcomplex* buffer) {
 				x = str2complex(t);
 			}
 			else {
-				resolve_name(t, vars, &x);
+				if (!resolve_name(t, vars, &x)) {
+					status = PARSER_ERR_UNDEFINED_NAME;
+					break;
+				}
 			}
 			cstack_push(st, x);
 			may_unary = false;
 		}
 	}
-	while (op->size > 0) {
-		process_op(st, sstack_pop(op));
+	if (status == PARSER_OK) {
+		while (op->size > 0) {
+			process_op(st, sstack_pop(op));
+		}
+		*buffer = cstack_pop(st);
 	}
-	*buffer = cstack_pop(st);
 	sstack_free(tokens);
 	cstack_free(st);
 	sstack_free(op);
+	return status;
 }
 
 int parse_expr(const char* expr_, cmap* vars, cvar* destination) {
@@ -189,7 +196,10 @@ int parse_expr(const char* expr_, cmap* vars, cvar* destination) {
 		}
 	}
 	// вычисляем выражение через ОПЗ
-	solve_RPN(name_index == NULL ? expr : (name_index + 1), vars, &var.value);
+	int status = solve_RPN(name_index == NULL ? expr : (name_index + 1), vars, &var.value);
+	if (status != PARSER_OK) {
+		return status;
+	}
 	// заносим результаты
 	*destination = var;
 	if (var_index != -1) {
