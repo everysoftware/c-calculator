@@ -1,0 +1,17 @@
+log(2+j,4-j)
+1+pow(2,10)
+-abs(-abs(1+j))
+exp(-j*PI*alpha*len/v0)
+alpha = sqrt(PI*len/(s1+s2))
+s1 = cos(real(S11)*real(S22))
+s2 = (sin(imag(S11*S22)))^2
+len = 191.76
+v0 = 299.799
+S11 = -0.01-0.92j
+S22 = 0.0001+0.997j
+(abc + xxx*2)/(z^3*(asd-50))
+abc = 5.34
+xxx = -97.12
+z = 23.23
+asd = -2.5
+23-16+45*2
