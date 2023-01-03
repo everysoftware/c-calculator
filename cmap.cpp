@@ -7,8 +7,8 @@
 #include "cmap.h"
 #include "cvar.h"
 
-#define CMAP_CAPACITY 1
-#define CMAP_ZOOM_FACTOR 2
+#define CMAP_CAPACITY 2
+#define CMAP_ZOOM_FACTOR 1.5
 
 cmap* cmap_init() {
 	cmap* temp = (cmap*)calloc(1, sizeof(cmap));
@@ -34,16 +34,16 @@ int cmap_find(cmap const* map, const char* name) {
 	return -1;
 }
 
-void cmap_reserve(cmap* map, size_t new_capacity) {
-	cvar* temp = (cvar*)calloc(new_capacity, sizeof(cvar));
+void cmap_reserve(cmap* map, size_t new_cap) {
+	cvar* temp = (cvar*)calloc(new_cap, sizeof(cvar));
 	if (temp != NULL) {
-		for (size_t i = 0; i < map->size && i < new_capacity; ++i) {
+		for (size_t i = 0; i < map->size && i < new_cap; ++i) {
 			temp[i] = map->data[i];
 		}
 	}
 	free(map->data);
 	map->data = temp;
-	map->capacity = new_capacity;
+	map->capacity = new_cap;
 }
 
 bool cmap_insert(cmap* map, const char* name, _Dcomplex value) {
@@ -51,7 +51,7 @@ bool cmap_insert(cmap* map, const char* name, _Dcomplex value) {
 		return false;
 	}
 	if (map->size == map->capacity) {
-		cmap_reserve(map, map->size * CMAP_ZOOM_FACTOR);
+		cmap_reserve(map, (size_t)(map->size * CMAP_ZOOM_FACTOR));
 	}
 	strcpy_s(map->data[map->size].name, VAR_NAME_SIZE, name);
 	map->data[map->size].value = value;

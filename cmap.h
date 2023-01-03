@@ -6,8 +6,6 @@
 
 #include "cvar.h"
 
-#define VAR_COUNT 1024
-
 typedef struct cmap
 {
 	cvar* data;

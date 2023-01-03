@@ -26,21 +26,30 @@ void remove_spaces(char* source) {
 
 bool check_brackets(const char* s)
 {
-	int indicator = 0;
+	sstack* stack = sstack_init(2);
+	bool flag = true;
 	while (*s) {
 		if (*s == '(') {
-			++indicator;
+			sstack_push(stack, "(");
 		}
 		else if (*s == ')') {
-			--indicator;
+			if (stack->size > 0) {
+				sstack_pop(stack);
+			}
+			else {
+				flag = false;
+				break;
+			}
 		}
 		++s;
 	}
-	return indicator == 0;
+	flag = flag && (stack->size == 0);
+	sstack_free(stack);
+	return flag;
 }
 
 sstack* split_into_tokens(const char* expr) {
-	sstack* tokens = sstack_init(TOKEN_STACK_SIZE, TOKEN_SIZE);
+	sstack* tokens = sstack_init(TOKEN_SIZE);
 	size_t len = strlen(expr);
 	char x[TOKEN_SIZE] = "";
 	size_t x_len = 0;
@@ -101,8 +110,8 @@ bool resolve_name(const char* name, cmap const* vars, _Dcomplex* buffer) {
 }
 
 int solve_RPN(const char* expr, cmap const* vars, _Dcomplex* buffer) {
-	cstack* st = cstack_init(NUMBER_STACK_SIZE);
-	sstack* op = sstack_init(OP_STACK_SIZE, OP_NAME_SIZE);
+	cstack* st = cstack_init();
+	sstack* op = sstack_init(OP_NAME_SIZE);
 	bool may_unary = true; // для различения унарных плюса и минуса
 	sstack* tokens = split_into_tokens(expr);
 	int status = PARSER_OK;

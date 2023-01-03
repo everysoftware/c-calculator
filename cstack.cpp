@@ -5,13 +5,14 @@
 #include "cstack.h"
 #include "cvar.h"
 
-#define CSTACK_ZOOM_FACTOR 2
+#define CSTACK_CAPACITY 2
+#define CSTACK_ZOOM_FACTOR 1.5
 
-cstack* cstack_init(size_t size) {
+cstack* cstack_init() {
 	cstack* temp = (cstack*)calloc(1, sizeof(cstack));
 	if (temp != NULL) {
-		temp->data = (_Dcomplex*)calloc(size, sizeof(_Dcomplex));
-		temp->capacity = size;
+		temp->data = (_Dcomplex*)calloc(CSTACK_CAPACITY, sizeof(_Dcomplex));
+		temp->capacity = CSTACK_CAPACITY;
 		temp->size = 0;
 	}
 	return temp;
@@ -22,21 +23,21 @@ void cstack_free(cstack* s) {
 	free(s);
 }
 
-void cstack_reserve(cstack* s, size_t new_capacity) {
-	_Dcomplex* temp = (_Dcomplex*)calloc(new_capacity, sizeof(_Dcomplex));
+void cstack_reserve(cstack* s, size_t new_cap) {
+	_Dcomplex* temp = (_Dcomplex*)calloc(new_cap, sizeof(_Dcomplex));
 	if (temp != NULL) {
-		for (size_t i = 0; i < s->size && i < new_capacity; ++i) {
+		for (size_t i = 0; i < s->size && i < new_cap; ++i) {
 			temp[i] = s->data[i];
 		}
 	}
 	free(s->data);
 	s->data = temp;
-	s->capacity = new_capacity;
+	s->capacity = new_cap;
 }
 
 void cstack_push(cstack* s, _Dcomplex x) {
 	if (s->size == s->capacity) {
-		cstack_reserve(s, s->size * CSTACK_ZOOM_FACTOR);
+		cstack_reserve(s, (size_t)(s->size * CSTACK_ZOOM_FACTOR));
 	}
 	s->data[s->size] = x;
 	++s->size;

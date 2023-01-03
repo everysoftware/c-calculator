@@ -8,10 +8,10 @@ typedef struct sstack
 	char** data;
 	size_t size;
 	size_t capacity;
-	size_t string_size;
+	size_t str_capacity;
 } sstack;
 
-sstack* sstack_init(size_t size, size_t string_size);
+sstack* sstack_init(size_t str_cap);
 
 void sstack_free(sstack* s);
 

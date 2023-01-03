@@ -4,19 +4,20 @@
 
 #include "sstack.h"
 
-#define SSTACK_ZOOM_FACTOR 2
+#define SSTACK_CAPACITY 2
+#define SSTACK_ZOOM_FACTOR 1.5
 
-sstack* sstack_init(size_t size, size_t string_size) {
+sstack* sstack_init(size_t str_cap) {
 	sstack* temp = (sstack*)calloc(1, sizeof(sstack));
 	if (temp != NULL) {
-		temp->data = (char**)calloc(size, sizeof(char*));
+		temp->data = (char**)calloc(SSTACK_CAPACITY, sizeof(char*));
 		if (temp->data != NULL) {
-			for (size_t i = 0; i < size; ++i) {
-				temp->data[i] = (char*)calloc(string_size, sizeof(char));
+			for (size_t i = 0; i < SSTACK_CAPACITY; ++i) {
+				temp->data[i] = (char*)calloc(str_cap, sizeof(char));
 			}
 		}
-		temp->string_size = string_size;
-		temp->capacity = size;
+		temp->str_capacity = str_cap;
+		temp->capacity = SSTACK_CAPACITY;
 		temp->size = 0;
 	}
 	return temp;
@@ -30,27 +31,23 @@ void sstack_free(sstack* s) {
 	free(s);
 }
 
-void sstack_reserve(sstack* s, size_t new_capacity) {
-	char** temp = (char**)calloc(new_capacity, sizeof(char*));
-	size_t n = s->size > new_capacity ? new_capacity : s->size;
+void sstack_reserve(sstack* s, size_t new_cap) {
+	char** temp = (char**)calloc(new_cap, sizeof(char*));
 	if (temp != NULL) {
-		for (size_t i = 0; i < new_capacity; ++i) {
-			temp[i] = (i > n) ? s->data[i] : (char*)calloc(s->string_size, sizeof(char));
+		for (size_t i = 0; i < new_cap; ++i) {
+			temp[i] = (i < s->size) ? s->data[i] : (char*)calloc(s->str_capacity, sizeof(char));
 		}
-	}
-	for (size_t i = 0; i < s->capacity; ++i) {
-		free(s->data[i]);
 	}
 	free(s->data);
 	s->data = temp;
-	s->capacity = new_capacity;
+	s->capacity = new_cap;
 }
 
 void sstack_push(sstack* s, const char* str) {
 	if (s->size == s->capacity) {
-		sstack_reserve(s, s->size * SSTACK_ZOOM_FACTOR);
+		sstack_reserve(s, (size_t)(s->size * SSTACK_ZOOM_FACTOR));
 	}
-	strcpy_s(s->data[s->size], s->string_size, str);
+	strcpy_s(s->data[s->size], s->str_capacity, str);
 	++s->size;
 }
 

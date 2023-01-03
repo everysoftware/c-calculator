@@ -6,9 +6,6 @@
 #include "cmap.h"
 
 #define EXPR_SIZE 1024
-#define NUMBER_STACK_SIZE 256
-#define OP_STACK_SIZE 256
-#define TOKEN_STACK_SIZE 256
 #define TOKEN_SIZE 256
 
 enum parser_errors {

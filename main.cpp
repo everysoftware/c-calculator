@@ -11,25 +11,13 @@
 
 #define INPUT_FILENAME "input.txt"
 #define OUTPUT_FILENAME "output.txt"
-#define FILE_LINES_COUNT 32
 
 void print_menu() {
 	printf("....... C Calculator .......\n");
 	printf("Choose an action:\n");
 	printf("1. Read from input.txt\n");
 	printf("2. Read from console\n");
-	printf("3. About\n");
-	printf("4. Exit\n");
-}
-
-bool show_about() {
-	printf("....... C Calculator .......\n");
-	printf("Calculator that supports variables, complex numbers, arithmetic operators and functions.\n");
-	printf("by Ivan Stasevich\n");
-	printf("07.01.2023\n");
-	system("pause");
-	system("cls");
-	return true;
+	printf("3. Exit\n");
 }
 
 void output_expr_value(FILE* f, cmap* vars, const char* expr) {
@@ -79,7 +67,7 @@ bool file_input(cmap* vars) {
 		printf("[File Error] Could not open '%s'\n", OUTPUT_FILENAME);
 		return false;
 	}
-	sstack* ss = sstack_init(FILE_LINES_COUNT, EXPR_SIZE);
+	sstack* ss = sstack_init(EXPR_SIZE);
 	// читаем выражения
 	char temp[EXPR_SIZE] = "";
 	while (fgets(temp, EXPR_SIZE, f) != NULL) {
@@ -101,7 +89,7 @@ bool file_input(cmap* vars) {
 bool menu(cmap* vars) {
 	print_menu();
 	char ch = _getch();
-	while (ch != '1' && ch != '2' && ch != '3' && ch != '4') {
+	while (ch != '1' && ch != '2' && ch != '3') {
 		ch = _getch();
 	}
 	system("cls");
@@ -111,15 +99,13 @@ bool menu(cmap* vars) {
 	case '2':
 		return console_input(vars);
 	case '3':
-		return show_about();
-	case '4':
 		return false;
 	}
 	return false;
 }
 
 void start() {
-	cmap* vars = cmap_init(VAR_COUNT);
+	cmap* vars = cmap_init();
 	while (menu(vars)) {
 		menu(vars);
 	}

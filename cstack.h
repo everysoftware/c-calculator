@@ -12,11 +12,11 @@ typedef struct cstack
 	_Dcomplex* data;
 } cstack;
 
-cstack* cstack_init(size_t size);
+cstack* cstack_init();
 
 void cstack_free(cstack* s);
 
-void cstack_reserve(cstack* s, size_t new_capacity);
+void cstack_reserve(cstack* s, size_t new_cap);
 
 void cstack_push(cstack* s, _Dcomplex z);
 
