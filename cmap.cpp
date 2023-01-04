@@ -17,6 +17,10 @@ cmap* cmap_init() {
 		temp->capacity = CMAP_CAPACITY;
 		temp->size = 0;
 	}
+	else {
+		perror("calloc");
+		exit(EXIT_FAILURE);
+	}
 	return temp;
 }
 
@@ -40,6 +44,10 @@ void cmap_reserve(cmap* map, size_t new_cap) {
 		for (size_t i = 0; i < map->size && i < new_cap; ++i) {
 			temp[i] = map->data[i];
 		}
+	}
+	else {
+		perror("calloc");
+		exit(EXIT_FAILURE);
 	}
 	free(map->data);
 	map->data = temp;

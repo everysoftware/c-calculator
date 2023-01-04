@@ -83,6 +83,21 @@ _Dcomplex xlog(_Dcomplex x, _Dcomplex a)
 {
 	return divide(clog(x), clog(a));
 }
+_Dcomplex cmod(_Dcomplex a, _Dcomplex b) {
+	double x1 = a._Val[0];
+	double x2 = b._Val[0];
+	double y1 = a._Val[1];
+	double y2 = b._Val[1];
+	if (y1 != 0 || y2 != 0) {
+		printf("[Calculation Error] Operator '%%' is for real numbers only\n");
+		return _DCOMPLEX_(0, 0);
+	}
+	if (x2 == 0) {
+		printf("[Calculation Error] Divison by zero\n");
+		return _DCOMPLEX_(0, 0);
+	}
+	return _DCOMPLEX_(fmod(x1, x2), 0);
+}
 
 static unary_op const unary_ops[] = {
 	{{-'+', '\0'}, &uplus, UNARY_FUNC_PRIORITY, false},
@@ -92,6 +107,7 @@ static unary_op const unary_ops[] = {
 	{"sin", &csin, UNARY_FUNC_PRIORITY, true},
 	{"cos", &ccos, UNARY_FUNC_PRIORITY, true},
 	{"tg", &ctan, UNARY_FUNC_PRIORITY, true},
+	{"tan", &ctan, UNARY_FUNC_PRIORITY, true},
 	{"exp", &cexp, UNARY_FUNC_PRIORITY, true},
 	{"ln", &clog, UNARY_FUNC_PRIORITY, true},
 	{"real", &xreal, UNARY_FUNC_PRIORITY, true},
@@ -109,6 +125,8 @@ static binary_op const binary_ops[] = {
 	{"*", &multiply, MULTIPLYDIVIDE_PRIORITY, false},
 	{"/", &divide, MULTIPLYDIVIDE_PRIORITY, false},
 	{"^", &cpow, BINARY_FUNC_PRIORITY, false},
+	{"**", &cpow, BINARY_FUNC_PRIORITY, false},
+	{"%", &cmod, BINARY_FUNC_PRIORITY, false},
 	{"pow", &cpow, BINARY_FUNC_PRIORITY, true},
 	{"log", &xlog, BINARY_FUNC_PRIORITY, true}
 };
@@ -136,7 +154,7 @@ int get_priority(const char* op)
 	if (strlen(op) == 0) {
 		return NOT_OP_PRIORITY;
 	}
-	// за этим скрывается унарный плюс/минус
+	// Р·Р° СЌС‚РёРј СЃРєСЂС‹РІР°РµС‚СЃСЏ СѓРЅР°СЂРЅС‹Р№ РїР»СЋСЃ/РјРёРЅСѓСЃ
 	if (op[0] < 0) {
 		return UNARY_FUNC_PRIORITY;
 	}
@@ -185,7 +203,7 @@ _Dcomplex process_unary_op(const char* op, _Dcomplex a) {
 			return unary_ops[i].func(a);
 		}
 	}
-	printf("[Parsing Error] Undefined unary op %s\n", op);
+	printf("[Parsing Error] Undefined unary operator '%s'\n", op);
 	return _DCOMPLEX_(0, 0);
 }
 _Dcomplex process_binary_op(const char* op, _Dcomplex a, _Dcomplex b) {
@@ -194,20 +212,27 @@ _Dcomplex process_binary_op(const char* op, _Dcomplex a, _Dcomplex b) {
 			return binary_ops[i].func(a, b);
 		}
 	}
-	printf("[Parsing Error] Undefined binary op %s\n", op);
+	printf("[Parsing Error] Undefined binary operator '%s'\n", op);
 	return _DCOMPLEX_(0, 0);
 }
-void process_op(cstack* st, const char* op)
+bool process_op(cstack* st, const char* op)
 {
 	_Dcomplex lhs = { 0 };
 	_Dcomplex rhs = { 0 };
 	if (is_unary(op)) {
+		if (st->size < 1) {
+			return false;
+		}
 		lhs = cstack_pop(st);
 		cstack_push(st, process_unary_op(op, lhs));
 	}
 	else {
+		if (st->size < 2) {
+			return false;
+		}
 		rhs = cstack_pop(st);
 		lhs = cstack_pop(st);
 		cstack_push(st, process_binary_op(op, lhs, rhs));
 	}
+	return true;
 }

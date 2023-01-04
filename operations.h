@@ -53,6 +53,6 @@ bool is_bracket_op_c(const char op);
 bool is_op(const char* op);
 bool is_op_c(const char op);
 bool is_unary(const char* op);
-void process_op(cstack* st, const char* op);
+bool process_op(cstack* st, const char* op);
 
 #endif

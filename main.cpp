@@ -37,6 +37,9 @@ void output_expr_value(FILE* f, cmap* vars, const char* expr) {
 	case PARSER_ERR_UNDEFINED_NAME:
 		fprintf(f, "[Parsing Error] Undefined name in expression\n");
 		break;
+	case PARSER_ERR_INCORRECT_EXPRESSION:
+		fprintf(f, "[Parsing Error] Incorrect expression\n");
+		break;
 	}
 }
 
@@ -68,7 +71,7 @@ bool file_input(cmap* vars) {
 		return false;
 	}
 	sstack* ss = sstack_init(EXPR_SIZE);
-	// читаем выражения
+	// С‡РёС‚Р°РµРј РІС‹СЂР°Р¶РµРЅРёСЏ
 	char temp[EXPR_SIZE] = "";
 	while (fgets(temp, EXPR_SIZE, f) != NULL) {
 		temp[strcspn(temp, "\n")] = '\0';
@@ -76,7 +79,7 @@ bool file_input(cmap* vars) {
 	}
 	fclose(f);
 	size_t expr_count = ss->size;
-	// вычисляем
+	// РІС‹С‡РёСЃР»СЏРµРј
 	for (size_t i = 0; i < expr_count; ++i) {
 		output_expr_value(fo, vars, sstack_pop(ss));
 	}

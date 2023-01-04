@@ -11,7 +11,7 @@
 #include "operations.h"
 #include "cvar.h"
 
-// Удаляет пробелы и переходы на новую строку
+// РЈРґР°Р»СЏРµС‚ РїСЂРѕР±РµР»С‹ Рё РїРµСЂРµС…РѕРґС‹ РЅР° РЅРѕРІСѓСЋ СЃС‚СЂРѕРєСѓ
 void remove_spaces(char* source) {
 	char* i = source;
 	char* j = source;
@@ -53,42 +53,46 @@ sstack* split_into_tokens(const char* expr) {
 	size_t len = strlen(expr);
 	char x[TOKEN_SIZE] = "";
 	size_t x_len = 0;
-	// имя оператора, переменной или константы
+	// РёРјСЏ РѕРїРµСЂР°С‚РѕСЂР°, РїРµСЂРµРјРµРЅРЅРѕР№ РёР»Рё РєРѕРЅСЃС‚Р°РЅС‚С‹
 	char name[TOKEN_SIZE] = "";
 	size_t name_len = 0;
-	// флаг, входит ли текущий символ в состав числа
-	bool char_in_number = false;
 	for (size_t i = 0; i < len; ++i) {
-		// определяем, перед нами часть числа или оператор
-		if (is_digit(expr[i]) && name_len == 0 || // цифра, не являющаяся частью какого-то имени
-			expr[i] == '.' || // точка (может встречаться только в составе числа)
-			// мнимая единица
-			// стоит в одиночку или после R-числа
+		// РѕРїСЂРµРґРµР»СЏРµРј, РїРµСЂРµРґ РЅР°РјРё С‡Р°СЃС‚СЊ С‡РёСЃР»Р° РёР»Рё РѕРїРµСЂР°С‚РѕСЂ
+		if (is_digit(expr[i]) && name_len == 0 || // С†РёС„СЂР°, РЅРµ СЏРІР»СЏСЋС‰Р°СЏСЃСЏ С‡Р°СЃС‚СЊСЋ РєР°РєРѕРіРѕ-С‚Рѕ РёРјРµРЅРё
+			expr[i] == '.' || // С‚РѕС‡РєР° (РјРѕР¶РµС‚ РІСЃС‚СЂРµС‡Р°С‚СЊСЃСЏ С‚РѕР»СЊРєРѕ РІ СЃРѕСЃС‚Р°РІРµ С‡РёСЃР»Р°)
+			// РјРЅРёРјР°СЏ РµРґРёРЅРёС†Р°
+			// СЃС‚РѕРёС‚ РІ РѕРґРёРЅРѕС‡РєСѓ РёР»Рё РїРѕСЃР»Рµ R-С‡РёСЃР»Р°
 			expr[i] == 'j' && (x_len == 0 || is_real(x)) &&
-			// стоит в конце выражения или след. символ нескобочный оператор (+, -, ...)
+			// СЃС‚РѕРёС‚ РІ РєРѕРЅС†Рµ РІС‹СЂР°Р¶РµРЅРёСЏ РёР»Рё СЃР»РµРґ. СЃРёРјРІРѕР» РЅРµСЃРєРѕР±РѕС‡РЅС‹Р№ РѕРїРµСЂР°С‚РѕСЂ (+, -, ...)
 			(i == len - 1 || !is_bracket_op_c(expr[i + 1]))) {
 			x[x_len++] = expr[i];
 			x[x_len] = '\0';
-			char_in_number = true;
 		}
-		// нескобочный оператор или имя
+		// РЅРµСЃРєРѕР±РѕС‡РЅС‹Р№ РѕРїРµСЂР°С‚РѕСЂ РёР»Рё РёРјСЏ
 		else {
-			// обрабатываем накопившееся число
+			// РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РЅР°РєРѕРїРёРІС€РµРµСЃСЏ С‡РёСЃР»Рѕ
 			if (x_len > 0) {
 				sstack_push(tokens, x);
 				x[0] = '\0';
 				x_len = 0;
 			}
 			if (is_op_c(expr[i]) && !is_bracket_op_c(expr[i]) || expr[i] == ',') {
-				// обрабатываем накопившееся имя
+				// РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РЅР°РєРѕРїРёРІС€РµРµСЃСЏ РёРјСЏ
 				if (name_len > 0) {
 					sstack_push(tokens, name);
 					name[0] = '\0';
 					name_len = 0;
 				}
-				sstack_push_char(tokens, expr[i]);
+				// РѕР±СЂР°Р±РѕС‚РєР° **
+				if (expr[i] == '*' && i != 0 && expr[i - 1] == '*') {
+					sstack_pop(tokens);
+					sstack_push(tokens, "**");
+				}
+				else {
+					sstack_push_char(tokens, expr[i]);
+				}
 			}
-			// "накапливаем" имя
+			// "РЅР°РєР°РїР»РёРІР°РµРј" РёРјСЏ
 			else {
 				name[name_len++] = expr[i];
 				name[name_len] = '\0';
@@ -105,16 +109,19 @@ sstack* split_into_tokens(const char* expr) {
 }
 
 bool resolve_name(const char* name, cmap const* vars, _Dcomplex* buffer) {
-	// константа? переменная?
+	// РєРѕРЅСЃС‚Р°РЅС‚Р°? РїРµСЂРµРјРµРЅРЅР°СЏ?
 	return get_const(name, buffer) || cmap_get(vars, name, buffer);
 }
 
 int solve_RPN(const char* expr, cmap const* vars, _Dcomplex* buffer) {
 	cstack* st = cstack_init();
 	sstack* op = sstack_init(OP_NAME_SIZE);
-	bool may_unary = true; // для различения унарных плюса и минуса
+	bool may_unary = true; // РґР»СЏ СЂР°Р·Р»РёС‡РµРЅРёСЏ СѓРЅР°СЂРЅС‹С… РїР»СЋСЃР° Рё РјРёРЅСѓСЃР°
 	sstack* tokens = split_into_tokens(expr);
 	int status = PARSER_OK;
+	if (tokens->size == 0) {
+		status = PARSER_ERR_EMPTY_EXPRESSION;
+	}
 	for (size_t i = 0; i < tokens->size; ++i) {
 		const char* t = tokens->data[i];
 		if (strcmp(t, "(") == 0) {
@@ -122,8 +129,17 @@ int solve_RPN(const char* expr, cmap const* vars, _Dcomplex* buffer) {
 			may_unary = true;
 		}
 		else if (strcmp(t, ")") == 0) {
+			if (st->size < 1) {
+				status = PARSER_ERR_INCORRECT_EXPRESSION;
+			}
 			while (strcmp(sstack_back(op), "(") != 0) {
-				process_op(st, sstack_pop(op));
+				if (!process_op(st, sstack_pop(op))) {
+					status = PARSER_ERR_INCORRECT_EXPRESSION;
+					break;
+				}
+			}
+			if (status != PARSER_OK) {
+				break;
 			}
 			sstack_pop(op);
 			may_unary = false;
@@ -134,17 +150,33 @@ int solve_RPN(const char* expr, cmap const* vars, _Dcomplex* buffer) {
 			if (may_unary && (strcmp(curop, "+") == 0 || strcmp(curop, "-") == 0)) {
 				curop[0] = -curop[0];
 			}
-			while (st->size > 0 && 
-				op->size > 0 &&
-				get_priority(sstack_back(op)) >= get_priority(curop)) {
-				process_op(st, sstack_pop(op));
+			while (op->size > 0 && (
+				!is_unary(curop) && get_priority(sstack_back(op)) >= get_priority(curop) ||
+				is_unary(curop) < 0 && get_priority(sstack_back(op)) > get_priority(curop))) {
+				if (!process_op(st, sstack_pop(op))) {
+					status = PARSER_ERR_INCORRECT_EXPRESSION;
+					break;
+				}
+			}
+			if (status != PARSER_OK) {
+				break;
 			}
 			sstack_push(op, curop);
 			may_unary = true;
 		}
 		else if (strcmp(t, ",") == 0) {
+			if (op->size < 1) {
+				status = PARSER_ERR_INCORRECT_EXPRESSION;
+				break;
+			}
 			while (strcmp(sstack_back(op), "(") != 0) {
-				process_op(st, sstack_pop(op));
+				if (!process_op(st, sstack_pop(op))) {
+					status = PARSER_ERR_INCORRECT_EXPRESSION;
+					break;
+				}
+			}
+			if (status != PARSER_OK) {
+				break;
 			}
 			may_unary = true;
 		}
@@ -165,9 +197,17 @@ int solve_RPN(const char* expr, cmap const* vars, _Dcomplex* buffer) {
 	}
 	if (status == PARSER_OK) {
 		while (op->size > 0) {
-			process_op(st, sstack_pop(op));
+			if (!process_op(st, sstack_pop(op))) {
+				status = PARSER_ERR_INCORRECT_EXPRESSION;
+				break;
+			}
 		}
-		*buffer = cstack_pop(st);
+		if (st->size != 1) {
+			status = PARSER_ERR_INCORRECT_EXPRESSION;
+		}
+		if (status == PARSER_OK) {
+			*buffer = cstack_pop(st);
+		}
 	}
 	sstack_free(tokens);
 	cstack_free(st);
@@ -188,15 +228,15 @@ int parse_expr(const char* expr_, cmap* vars, cvar* destination) {
 	char* name_index = strchr(expr, '=');
 	cvar var = { 0 };
 	int var_index = -1;
-	// если в выражении есть присваивание
+	// РµСЃР»Рё РІ РІС‹СЂР°Р¶РµРЅРёРё РµСЃС‚СЊ РїСЂРёСЃРІР°РёРІР°РЅРёРµ
 	if (name_index != NULL) {
-		// определяем имя переменной
+		// РѕРїСЂРµРґРµР»СЏРµРј РёРјСЏ РїРµСЂРµРјРµРЅРЅРѕР№
 		char var_name[VAR_NAME_SIZE] = "";
 		for (size_t i = 0; i < (size_t)(name_index - expr); ++i) {
 			var_name[i] = expr[i];
 		}
-		int var_index = cmap_find(vars, var_name);
-		// если переменная уже существует, будем изменять её значение
+		var_index = cmap_find(vars, var_name);
+		// РµСЃР»Рё РїРµСЂРµРјРµРЅРЅР°СЏ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚, Р±СѓРґРµРј РёР·РјРµРЅСЏС‚СЊ РµС‘ Р·РЅР°С‡РµРЅРёРµ
 		if (var_index != -1) {
 			var = vars->data[var_index];
 		}
@@ -204,12 +244,12 @@ int parse_expr(const char* expr_, cmap* vars, cvar* destination) {
 			strcpy_s(var.name, VAR_NAME_SIZE, var_name);
 		}
 	}
-	// вычисляем выражение через ОПЗ
+	// РІС‹С‡РёСЃР»СЏРµРј РІС‹СЂР°Р¶РµРЅРёРµ С‡РµСЂРµР· РћРџР—
 	int status = solve_RPN(name_index == NULL ? expr : (name_index + 1), vars, &var.value);
 	if (status != PARSER_OK) {
 		return status;
 	}
-	// заносим результаты
+	// Р·Р°РЅРѕСЃРёРј СЂРµР·СѓР»СЊС‚Р°С‚С‹
 	*destination = var;
 	if (var_index != -1) {
 		vars->data[var_index] = var;

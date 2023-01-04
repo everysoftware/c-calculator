@@ -15,6 +15,10 @@ cstack* cstack_init() {
 		temp->capacity = CSTACK_CAPACITY;
 		temp->size = 0;
 	}
+	else {
+		perror("calloc");
+		exit(EXIT_FAILURE);
+	}
 	return temp;
 }
 
@@ -29,6 +33,10 @@ void cstack_reserve(cstack* s, size_t new_cap) {
 		for (size_t i = 0; i < s->size && i < new_cap; ++i) {
 			temp[i] = s->data[i];
 		}
+	}
+	else {
+		perror("calloc");
+		exit(EXIT_FAILURE);
 	}
 	free(s->data);
 	s->data = temp;
