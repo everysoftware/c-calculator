@@ -64,11 +64,11 @@ bool file_input(cmap* vars) {
 	FILE* fo = NULL;
 	if (fopen_s(&f, INPUT_FILENAME, "r") != 0) {
 		printf("[File Error] Could not open '%s'\n", INPUT_FILENAME);
-		return false;
+		return true;
 	}
 	if (fopen_s(&fo, OUTPUT_FILENAME, "w") != 0) {
 		printf("[File Error] Could not open '%s'\n", OUTPUT_FILENAME);
-		return false;
+		return true;
 	}
 	sstack* ss = sstack_init(EXPR_SIZE);
 	// читаем выражения
@@ -109,8 +109,9 @@ bool menu(cmap* vars) {
 
 void start() {
 	cmap* vars = cmap_init();
-	while (menu(vars)) {
-		menu(vars);
+	bool m = menu(vars);
+	while (m) {
+		m = menu(vars);
 	}
 	cmap_free(vars);
 }
