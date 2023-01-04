@@ -109,10 +109,7 @@ bool menu(cmap* vars) {
 
 void start() {
 	cmap* vars = cmap_init();
-	bool m = menu(vars);
-	while (m) {
-		m = menu(vars);
-	}
+	while (menu(vars)) {}
 	cmap_free(vars);
 }
 
