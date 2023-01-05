@@ -84,12 +84,14 @@ bool file_input(cmap* vars) {
 		output_expr_value(fo, vars, sstack_pop(ss));
 	}
 	printf("[Success] Results are at '%s'\n", OUTPUT_FILENAME);
+	system("pause");
 	fclose(fo);
 	sstack_free(ss);
 	return true;
 }
 
 bool menu(cmap* vars) {
+	system("cls");
 	print_menu();
 	char ch = _getch();
 	while (ch != '1' && ch != '2' && ch != '3') {

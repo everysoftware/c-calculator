@@ -113,7 +113,7 @@ bool resolve_name(const char* name, cmap const* vars, _Dcomplex* buffer) {
 	return get_const(name, buffer) || cmap_get(vars, name, buffer);
 }
 
-int solve_RPN(const char* expr, cmap const* vars, _Dcomplex* buffer) {
+int solve_with_RPN(const char* expr, cmap const* vars, _Dcomplex* buffer) {
 	cstack* st = cstack_init();
 	sstack* op = sstack_init(OP_NAME_SIZE);
 	bool may_unary = true; // для различения унарных плюса и минуса
@@ -245,7 +245,7 @@ int parse_expr(const char* expr_, cmap* vars, cvar* destination) {
 		}
 	}
 	// вычисляем выражение через ОПЗ
-	int status = solve_RPN(name_index == NULL ? expr : (name_index + 1), vars, &var.value);
+	int status = solve_with_RPN(name_index == NULL ? expr : (name_index + 1), vars, &var.value);
 	if (status != PARSER_OK) {
 		return status;
 	}
